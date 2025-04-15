@@ -1,0 +1,83 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+
+export default function ApartmentEstimator() {
+  const [district, setDistrict] = useState("");
+  const [area, setArea] = useState("");
+  const [floor, setFloor] = useState("");
+  const [totalFloors, setTotalFloors] = useState("");
+  const [buildingType, setBuildingType] = useState("");
+  const [repairType, setRepairType] = useState("");
+  const [yearBuilt, setYearBuilt] = useState("");
+  const [price, setPrice] = useState(null);
+
+  const estimatePrice = async () => {
+    const response = await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ district, area, floor, totalFloors, buildingType, repairType, yearBuilt })
+    });
+    const data = await response.json();
+    setPrice(data.price);
+  };
+
+  return (
+    <div className="max-w-xl mx-auto mt-10 p-4">
+      <Card>
+        <CardContent className="space-y-4">
+          <h2 className="text-xl font-semibold">Оценка квартиры в Баку</h2>
+
+          <Select onValueChange={setDistrict}>
+            <SelectTrigger>
+              <SelectValue placeholder="Выберите район" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Yasamal">Ясамал</SelectItem>
+              <SelectItem value="Nasimi">Насими</SelectItem>
+              <SelectItem value="Sabayil">Сабайиль</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Input placeholder="Площадь (м²)" value={area} onChange={e => setArea(e.target.value)} />
+          <Input placeholder="Этаж" value={floor} onChange={e => setFloor(e.target.value)} />
+          <Input placeholder="Этажность" value={totalFloors} onChange={e => setTotalFloors(e.target.value)} />
+          <Input placeholder="Год постройки" value={yearBuilt} onChange={e => setYearBuilt(e.target.value)} />
+
+          <Select onValueChange={setBuildingType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Тип здания" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Yeni tikili">Новостройка</SelectItem>
+              <SelectItem value="Kohne tikili">Вторичка</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select onValueChange={setRepairType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Тип ремонта" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Temirsiz">Без ремонта</SelectItem>
+              <SelectItem value="Orta temir">Обычный ремонт</SelectItem>
+              <SelectItem value="Euro temir">Евроремонт</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Button className="w-full" onClick={estimatePrice}>
+            Оценить квартиру
+          </Button>
+
+          {price && (
+            <div className="text-lg text-center mt-4">
+              Примерная цена: <span className="font-bold">{price.toLocaleString()} AZN</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
